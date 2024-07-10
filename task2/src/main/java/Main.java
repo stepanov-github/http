@@ -8,9 +8,9 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
+
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -35,14 +35,17 @@ public class Main {
                 });
 
         String url = nasaObject.getUrl();
+
         String filename = url.substring(url.lastIndexOf("/") + 1, url.length());
 
-        try {
-            URL imageUrl = new URL(url);
-            BufferedImage image = ImageIO.read(imageUrl);
-            ImageIO.write(image, "jpg", new File(filename));
-            System.out.println("Image downloaded successfully: " + filename);
-        } catch (Exception e) {
+        try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
+             FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
+            byte dataBuffer[] = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                fileOutputStream.write(dataBuffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
